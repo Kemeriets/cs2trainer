@@ -43,17 +43,6 @@ def get_faceit_player(nickname: str):
         "player_id": player_data.get("player_id")
     }
 
-# ➤ Получить историю матчей
-@app.get("/player/matches/faceit")
-def get_faceit_matches(player_id: str, game: str = "cs2", limit: int = 5):
-    headers = {"Authorization": f"Bearer {FACEIT_API_KEY}"}
-    response = requests.get(FACEIT_BASE_URL + f"players/{player_id}/history?game={game}&limit={limit}", headers=headers)
-
-    if response.status_code != 200:
-        return {"error": f"Faceit API вернул ошибку: {response.status_code}"}
-
-    return response.json()
-
 # ➤ GPT-анализ профиля
 @app.post("/player/analyze")
 def analyze_player(player_data: dict):
@@ -82,3 +71,28 @@ def save_profile(player_data: dict):
         json.dump(player_data, f, indent=4, ensure_ascii=False)
 
     return {"message": f"Профиль игрока {nickname} сохранён в {filename}"}
+
+@app.get("/player/matches/faceit")
+def get_faceit_matches(player_id: str, game: str = "cs2", limit: int = 10):
+    headers = {"Authorization": f"Bearer {FACEIT_API_KEY}"}
+    url = f"{FACEIT_BASE_URL}players/{player_id}/history?game={game}&limit={limit}"
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code != 200:
+        return {"error": f"Faceit API вернул ошибку: {response.status_code}"}
+
+    return response.json()
+
+# Получение подробной статистики матча по match_id
+@app.get("/player/match_stats/faceit")
+def get_faceit_match_stats(match_id: str):
+    headers = {"Authorization": f"Bearer {FACEIT_API_KEY}"}
+    url = f"{FACEIT_BASE_URL}matches/{match_id}/stats"
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code != 200:
+        return {"error": f"Faceit API вернул ошибку: {response.status_code}"}
+
+    return response.json()
